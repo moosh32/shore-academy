@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String         @id @default(cuid())
+  email        String         @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime       @default(now())
+  progress     Progress[]
+  journal      JournalEntry[]
+  labSaves     LabSave[]
+}
+
+/// lessonId "" is the module quiz row. quizScore is the best score (0–1).
+model Progress {
+  id        String   @id @default(cuid())
+  userId    String
+  moduleId  Int
+  lessonId  String   @default("")
+  completed Boolean  @default(false)
+  quizScore Float?
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, moduleId, lessonId])
+}
+
+model JournalEntry {
+  id        String   @id @default(cuid())
+  userId    String
+  date      String
+  ticker    String?
+  plannedR  Float
+  actualR   Float
+  notes     String   @default("")
+  tags      String   @default("[]")
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model LabSave {
+  id      String   @id @default(cuid())
+  userId  String
+  toolId  String
+  inputs  String
+  result  String
+  savedAt DateTime @updatedAt
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, toolId])
+}
