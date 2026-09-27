@@ -2,6 +2,8 @@
 FROM node:20-slim AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
+# prisma schema must exist before npm ci runs the postinstall hook (prisma generate)
+COPY prisma ./prisma
 RUN npm ci
 
 # ---------- build ----------
