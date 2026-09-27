@@ -123,3 +123,18 @@ SQLite דרך Prisma. המיגרציה הראשונה נמצאת ב-`prisma/migr
 `npx prisma migrate deploy` יוצר את הטבלאות על קובץ מקומי חדש. אין צורך לייבא נתונים.
 
 כדי לעבור ל-Postgres משנים את `provider` ב-`prisma/schema.prisma` ואת `DATABASE_URL`, ויוצרים מיגרציה חדשה.
+
+## פריסה ל-Railway
+
+ה-repo מוכן לפריסה עם `Dockerfile` + `railway.json` (בונה Dockerfile, healthcheck על `/`, הפעלה מחדש על כשל, volume ב-`/data`).
+
+1. ב-Railway: פרויקט חדש ← Deploy from GitHub repo ← בחר את ה-repo.
+2. ב-Service ← Settings ← Volumes ← Add Volume, mount path: `/data` (חובה — אחרת הנתונים יימחקו בכל redeploy).
+3. ב-Service ← Variables הגדר:
+
+| משתנה | חובה | ערך |
+| --- | --- | --- |
+| `AUTH_SECRET` | כן | מחרוזת אקראית ארוכה, למשל פלט של `openssl rand -base64 48`. בלעדיו השרת מסרב לעלות בייצור |
+| `DATABASE_URL` | לא | ברירת מחדל: `file:/data/dev.db` (על ה-volume). לשנות רק אם צריך נתיב אחר |
+
+`PORT` מסופק אוטומטית ע"י Railway. ב-startup רצות המיגרציות (`prisma migrate deploy`) ואז `next start`.
